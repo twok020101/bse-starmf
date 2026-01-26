@@ -5,10 +5,10 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
+  id-token: write
 
 jobs:
-  create-pr:
+  stable:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Get latest beta version
         id: version
@@ -38,24 +39,33 @@ jobs:
           echo "beta_version=$BETA_VERSION" >> $GITHUB_OUTPUT
           echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Update version to stable
         run: |
-          pnpm --filter @bse-starmf/core version "${{ steps.version.outputs.stable_version }}" --git-tag-version=false
+          cd packages/core
+          pnpm version "${{ steps.version.outputs.stable_version }}" --git-tag-version=false
+          cd ../..
 
-      - name: Commit stable version
+      - name: Commit and tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/core/package.json
-          git commit -m "chore: promote ${{ steps.version.outputs.beta_version }} → ${{ steps.version.outputs.stable_version }} [stable]"
-          git push origin main
+          git commit -m "chore(release): ${{ steps.version.outputs.stable_version }} [skip ci]"
+          git tag "v${{ steps.version.outputs.stable_version }}"
 
-      - name: Create Pull Request
+      - name: Push
         run: |
-          gh pr create \
-            --title "Release: ${{ steps.version.outputs.stable_version }}" \
-            --body "Promote beta ${{ steps.version.outputs.beta_version }} to stable ${{ steps.version.outputs.stable_version }}" \
-            --base main \
-            --head main
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push
+          git push origin "v${{ steps.version.outputs.stable_version }}"
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Publish to npm (Stable)
+        run: pnpm -r publish --access public --tag latest --provenance --no-git-checks
