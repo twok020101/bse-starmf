@@ -42,9 +42,9 @@ jobs:
         run: |
           cd packages/core
           pnpm version patch
-          VERSION=$(pnpm json version -q)
+          VERSION=$(node -e "console.log(require('./package.json').version)")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" > /tmp/version.txt
+          echo "$VERSION" > /tmp/version.txt
           cd ../..
 
       - name: Commit and tag
