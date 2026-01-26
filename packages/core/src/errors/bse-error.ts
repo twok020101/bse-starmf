@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import type { AxiosError } from 'axios';
 import { BSEErrorCode } from './error-codes';
 import { ERROR_MESSAGES, MESSAGE_TO_CODE_MAP, RETRYABLE_ERRORS } from './error-messages';
 
@@ -18,7 +18,7 @@ export class BSEError extends Error {
     }
   ) {
     const errorInfo = BSEError.getErrorInfoStatic(code);
-    const finalMessage = options?.rawResponse || message || errorInfo.message;
+    const finalMessage = options?.rawResponse ?? message ?? errorInfo.message;
     super(finalMessage);
 
     this.code = errorInfo.code;
@@ -36,7 +36,7 @@ export class BSEError extends Error {
     if (Object.values(BSEErrorCode).includes(code as BSEErrorCode)) {
       return {
         code: code as BSEErrorCode,
-        message: ERROR_MESSAGES[code as BSEErrorCode] || 'Unknown error',
+        message: ERROR_MESSAGES[code as BSEErrorCode] ?? 'Unknown error',
         retryable: RETRYABLE_ERRORS.has(code as BSEErrorCode),
       };
     }
@@ -49,7 +49,7 @@ export class BSEError extends Error {
   }
 }
 
-export async function mapAxiosError(error: AxiosError): Promise<BSEError> {
+export function mapAxiosError(error: AxiosError): BSEError {
   if (!error.response) {
     return new BSEError('NET_001', error.message, { retryable: true });
   }
@@ -65,6 +65,7 @@ export async function mapAxiosError(error: AxiosError): Promise<BSEError> {
 
 function extractErrorMessage(soapResponse: string): string {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const parser = new (require('fast-xml-parser').XMLParser)();
     const doc = parser.parse(soapResponse);
     const faultString =
@@ -82,7 +83,7 @@ function extractErrorMessage(soapResponse: string): string {
 
   if (typeof soapResponse === 'string' && soapResponse.includes('faultstring')) {
     const match = soapResponse.match(/<faultstring>([^<]+)<\/faultstring>/);
-    if (match && match[1]) {
+    if (match?.[1]) {
       return match[1].trim();
     }
   }
@@ -91,5 +92,5 @@ function extractErrorMessage(soapResponse: string): string {
 }
 
 function mapErrorMessageToCode(message: string): BSEErrorCode {
-  return MESSAGE_TO_CODE_MAP[message] || ('UNKNOWN' as BSEErrorCode);
+  return MESSAGE_TO_CODE_MAP[message] ?? ('UNKNOWN' as BSEErrorCode);
 }

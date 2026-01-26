@@ -1,4 +1,4 @@
-import { BSEConfig } from '../client/client.types';
+import type { BSEConfig } from '../client/client.types';
 
 export const TEST_CONFIG: BSEConfig = {
   baseUrl: 'https://bsestarmfdemo.bseindia.com',

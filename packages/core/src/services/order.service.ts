@@ -1,10 +1,10 @@
 import { BaseService } from './base.service';
-import { BSEConfig } from '../client/client.types';
-import { SessionManager } from '../auth/session-manager';
-import { PasswordEncryptor } from '../encryption/password-encryptor';
+import type { BSEConfig } from '../client/client.types';
+import type { SessionManager } from '../auth/session-manager';
+import type { PasswordEncryptor } from '../encryption/password-encryptor';
 import { SOAPBuilder } from '../utils/soap-builder';
 import { TransactionNoGenerator } from '../utils/transaction-no';
-import {
+import type {
   PurchaseRequest,
   PurchaseResponse,
   RedeemRequest,

@@ -1,4 +1,10 @@
-import { BuySellType, DPTransaction, YesNo, SIPFrequency, TransactionCode } from './common.types';
+import type {
+  BuySellType,
+  DPTransaction,
+  YesNo,
+  SIPFrequency,
+  TransactionCode,
+} from './common.types';
 
 export interface PurchaseRequest {
   clientCode: string;

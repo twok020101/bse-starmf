@@ -1,8 +1,8 @@
 import { BaseService } from './base.service';
-import { BSEConfig } from '../client/client.types';
-import { SessionManager } from '../auth/session-manager';
-import { PasswordEncryptor } from '../encryption/password-encryptor';
-import { XSIPRequest, XSIPResponse } from '../types/api.types';
+import type { BSEConfig } from '../client/client.types';
+import type { SessionManager } from '../auth/session-manager';
+import type { PasswordEncryptor } from '../encryption/password-encryptor';
+import type { XSIPRequest, XSIPResponse } from '../types/api.types';
 import { validateSIPParams } from '../utils/validators';
 import { TransactionNoGenerator } from '../utils/transaction-no';
 

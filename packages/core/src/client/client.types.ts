@@ -1,4 +1,4 @@
-import { Environment } from '../types/common.types';
+import type { Environment } from '../types/common.types';
 
 export interface BSEConfig {
   userId: string;

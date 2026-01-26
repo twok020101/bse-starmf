@@ -26,6 +26,7 @@ export const RETRYABLE_ERRORS: Set<BSEErrorCode> = new Set([
   BSEErrorCode.NETWORK_ERROR,
   BSEErrorCode.SERVER_ERROR,
   BSEErrorCode.TIMEOUT_ERROR,
+  BSEErrorCode.PASSWORD_BLANK,
 ]);
 
 export const MESSAGE_TO_CODE_MAP: Record<string, BSEErrorCode> = {

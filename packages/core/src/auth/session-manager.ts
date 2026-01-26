@@ -1,6 +1,7 @@
 import axios from 'axios';
-import { BSEConfig } from '../client/client.types';
-import { Session, SessionState, isSessionExpired } from './session.types';
+import type { BSEConfig } from '../client/client.types';
+import type { Session, SessionState } from './session.types';
+import { isSessionExpired } from './session.types';
 import { SOAPBuilder } from '../utils/soap-builder';
 import { BSEError } from '../errors/bse-error';
 import { SESSION_EXPIRY } from '../config/environments';
@@ -24,7 +25,7 @@ export class SessionManager {
       PassKey: this.config.passkey,
     });
 
-    const baseUrl = this.config.baseUrl || this.getBaseUrl();
+    const baseUrl = this.config.baseUrl ?? this.getBaseUrl();
 
     const response = await axios.post(`${baseUrl}/MFOrderEntry/MFOrder.svc/Secure`, soapEnvelope, {
       headers: { 'Content-Type': 'text/xml; charset=utf-8' },
@@ -34,7 +35,7 @@ export class SessionManager {
     const result = this.parseAuthResponse(response.data);
 
     if (result.code !== '100') {
-      throw new BSEError('AUTH_FAILED', result.message || 'Authentication failed');
+      throw new BSEError('AUTH_FAILED', result.message ?? 'Authentication failed');
     }
 
     const session: Session = {
@@ -114,9 +115,9 @@ export class SessionManager {
 
       const parts = resultText.split('|');
       return {
-        code: parts[0] || '',
+        code: parts[0] ?? '',
         message: parts[1],
-        encryptedPassword: parts[1] || '',
+        encryptedPassword: parts[1] ?? '',
       };
     } catch (error) {
       if (error instanceof BSEError) {

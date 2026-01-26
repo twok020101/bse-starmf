@@ -1,6 +1,7 @@
-import axios, { AxiosInstance } from 'axios';
-import { BSEConfig } from '../client/client.types';
-import {
+import type { AxiosInstance } from 'axios';
+import axios from 'axios';
+import type { BSEConfig } from '../client/client.types';
+import type {
   PaymentGatewayRequest,
   PaymentGatewayResponse,
   PaymentStatusRequest,

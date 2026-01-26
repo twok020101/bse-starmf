@@ -1,7 +1,8 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { BSEConfig } from '../client/client.types';
-import { SessionManager } from '../auth/session-manager';
-import { PasswordEncryptor } from '../encryption/password-encryptor';
+import type { AxiosInstance, AxiosError } from 'axios';
+import axios from 'axios';
+import type { BSEConfig } from '../client/client.types';
+import type { SessionManager } from '../auth/session-manager';
+import type { PasswordEncryptor } from '../encryption/password-encryptor';
 import { mapAxiosError } from '../errors/bse-error';
 import { isSessionExpired } from '../auth/session.types';
 
@@ -23,11 +24,11 @@ export abstract class BaseService {
     this.encryptor = encryptor;
     this.basePath = basePath;
 
-    const baseUrl = config.baseUrl || this.getBaseUrl();
+    const baseUrl = config.baseUrl ?? this.getBaseUrl();
 
     this.httpClient = axios.create({
       baseURL: `${baseUrl}${basePath}`,
-      timeout: config.timeout || 30000,
+      timeout: config.timeout ?? 30000,
       headers: {
         'Content-Type': 'text/xml; charset=utf-8',
       },
@@ -90,8 +91,8 @@ export abstract class BaseService {
 
     this.httpClient.interceptors.response.use(
       response => response,
-      async (error: AxiosError) => {
-        const bseError = await mapAxiosError(error);
+      (error: AxiosError) => {
+        const bseError = mapAxiosError(error);
         throw bseError;
       }
     );

@@ -1,6 +1,7 @@
-import axios, { AxiosInstance } from 'axios';
-import { BSEConfig } from '../client/client.types';
-import {
+import type { AxiosInstance } from 'axios';
+import axios from 'axios';
+import type { BSEConfig } from '../client/client.types';
+import type {
   ClientRegistrationRequest,
   ClientRegistrationResponse,
   ClientModificationRequest,
@@ -14,7 +15,7 @@ export class ClientService {
 
   constructor(config: BSEConfig) {
     this.config = config;
-    const baseUrl = config.baseUrl || this.getBaseUrl();
+    const baseUrl = config.baseUrl ?? this.getBaseUrl();
     this.httpClient = axios.create({
       baseURL: `${baseUrl}/StarMFCommonAPI/ClientMaster/Registration`,
       timeout: config.timeout || 30000,

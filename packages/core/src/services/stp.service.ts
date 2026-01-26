@@ -1,6 +1,11 @@
-import axios, { AxiosInstance } from 'axios';
-import { BSEConfig } from '../client/client.types';
-import { STPRegistrationRequest, STPCancellationRequest, STPResponse } from '../types/api.types';
+import type { AxiosInstance } from 'axios';
+import axios from 'axios';
+import type { BSEConfig } from '../client/client.types';
+import type {
+  STPRegistrationRequest,
+  STPCancellationRequest,
+  STPResponse,
+} from '../types/api.types';
 import { API_ENDPOINTS } from '../config/environments';
 import { BSEError } from '../errors/bse-error';
 import { TransactionNoGenerator } from '../utils/transaction-no';

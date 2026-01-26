@@ -1,4 +1,4 @@
-import { BSEConfig, BSEClientOptions } from './client.types';
+import type { BSEConfig, BSEClientOptions } from './client.types';
 import { SessionManager } from '../auth/session-manager';
 import { PasswordEncryptor } from '../encryption/password-encryptor';
 import { OrderService } from '../services/order.service';
@@ -37,12 +37,12 @@ export class BSEClient {
       userId: config.userId,
       memberId: config.memberId,
       password: config.password,
-      passkey: config.passkey || this.generateDefaultPasskey(),
+      passkey: config.passkey ?? this.generateDefaultPasskey(),
       environment: config.environment,
       baseUrl: config.baseUrl,
-      timeout: config.timeout || 30000,
-      retries: config.retries || 3,
-      debug: config.debug || false,
+      timeout: config.timeout ?? 30000,
+      retries: config.retries ?? 3,
+      debug: config.debug ?? false,
     };
 
     this.sessionManager = new SessionManager(this.config);
@@ -80,7 +80,7 @@ export class BSEClient {
     this._authenticated = true;
   }
 
-  async disconnect(): Promise<void> {
+  disconnect(): void {
     this.sessionManager.clearSession();
     this._authenticated = false;
   }

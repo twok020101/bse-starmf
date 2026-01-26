@@ -1,15 +1,15 @@
 import AES from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
-import { EncryptorOptions } from './encryptor.types';
+import type { EncryptorOptions } from './encryptor.types';
 
 export class PasswordEncryptor {
   private options: Required<EncryptorOptions>;
 
   constructor(options: EncryptorOptions = {}) {
     this.options = {
-      algorithm: options.algorithm || 'AES',
-      mode: options.mode || 'ECB',
-      padding: options.padding || 'Pkcs7',
+      algorithm: options.algorithm ?? 'AES',
+      mode: options.mode ?? 'ECB',
+      padding: options.padding ?? 'Pkcs7',
     };
   }
 
@@ -33,7 +33,7 @@ export class PasswordEncryptor {
     const CryptoJS = require('crypto-js');
     const modeName = this.options.mode.toUpperCase();
     const mode = (CryptoJS.mode as Record<string, object>)[modeName];
-    return mode || CryptoJS.mode.ECB;
+    return mode ?? CryptoJS.mode.ECB;
   }
 
   private getPadding(): object {
@@ -41,6 +41,6 @@ export class PasswordEncryptor {
     const padName =
       this.options.padding.charAt(0).toUpperCase() + this.options.padding.slice(1).toLowerCase();
     const pad = (CryptoJS.pad as Record<string, object>)[padName];
-    return pad || CryptoJS.pad.Pkcs7;
+    return pad ?? CryptoJS.pad.Pkcs7;
   }
 }

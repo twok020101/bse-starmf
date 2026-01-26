@@ -1,6 +1,7 @@
 import { OrderService } from '../../src/services/order.service';
 import { SessionManager } from '../../src/auth/session-manager';
 import { PasswordEncryptor } from '../../src/encryption/password-encryptor';
+import { PurchaseResponse } from '../../src/types/api.types';
 import {
   PURCHASE_SUCCESS_RESPONSE,
   REDEMPTION_SUCCESS_RESPONSE,
@@ -11,16 +12,21 @@ import {
 import { createMockSessionManager, createMockEncryptor, TEST_CONFIG } from '../mocks/mock-helpers';
 import { jest } from '@jest/globals';
 
+type OrderServiceExecuteRequest = (methodName: string, params: Record<string, unknown>) => Promise<PurchaseResponse>;
+
 describe('OrderService Integration Tests', () => {
   let orderService: OrderService;
   let mockSessionManager: jest.Mocked<SessionManager>;
   let mockEncryptor: jest.Mocked<PasswordEncryptor>;
+  let mockExecuteRequest: jest.Mock<Promise<PurchaseResponse>, [string, Record<string, unknown>]>;
 
   beforeEach(() => {
     jest.clearAllMocks();
     mockSessionManager = createMockSessionManager() as jest.Mocked<SessionManager>;
     mockEncryptor = createMockEncryptor() as jest.Mocked<PasswordEncryptor>;
     orderService = new OrderService(TEST_CONFIG, mockSessionManager, mockEncryptor);
+    mockExecuteRequest = jest.fn<Promise<PurchaseResponse>, [string, Record<string, unknown>]>();
+    (orderService as unknown as { executeRequest: typeof mockExecuteRequest }).executeRequest = mockExecuteRequest;
   });
 
   afterEach(() => {
@@ -29,7 +35,7 @@ describe('OrderService Integration Tests', () => {
 
   describe('purchase', () => {
     it('should successfully place a purchase order', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000001',
         orderId: 12345678,
@@ -54,7 +60,7 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should place purchase with quantity instead of amount', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000002',
         orderId: 12345678,
@@ -75,7 +81,7 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should handle order rejection', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000003',
         orderId: 0,
@@ -97,7 +103,7 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should include optional parameters when provided', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000004',
         orderId: 12345678,
@@ -119,7 +125,7 @@ describe('OrderService Integration Tests', () => {
         euinDeclaration: 'Y',
       });
 
-      expect((orderService as any).executeRequest).toHaveBeenCalledWith(
+      expect(mockExecuteRequest).toHaveBeenCalledWith(
         'orderEntryParam',
         expect.objectContaining({
           FolioNo: '12345678',
@@ -129,14 +135,10 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should throw error for empty response', async () => {
-      jest
-        .spyOn(orderService as any, 'executeRequest')
-        .mockRejectedValue(
-          new (require('../../src/errors/bse-error').BSEError)(
-            'EMPTY_RESPONSE',
-            'Received empty response from BSE'
-          )
-        );
+      const { BSEError } = require('../../src/errors/bse-error');
+      mockExecuteRequest.mockRejectedValue(
+        new BSEError('EMPTY_RESPONSE', 'Received empty response from BSE')
+      );
 
       await expect(
         orderService.purchase({
@@ -150,7 +152,7 @@ describe('OrderService Integration Tests', () => {
 
   describe('redeem', () => {
     it('should successfully place a redemption order', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000005',
         orderId: 12345679,
@@ -174,7 +176,7 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should place redemption with quantity', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000006',
         orderId: 12345679,
@@ -195,7 +197,7 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should handle all redeem flag', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000007',
         orderId: 12345679,
@@ -216,7 +218,7 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should handle invalid scheme response', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000008',
         orderId: 0,
@@ -240,9 +242,7 @@ describe('OrderService Integration Tests', () => {
 
   describe('transaction number generation', () => {
     it('should generate unique transaction numbers', async () => {
-      const executeRequestSpy = jest.spyOn(orderService as any, 'executeRequest');
-
-      executeRequestSpy.mockResolvedValueOnce({
+      mockExecuteRequest.mockResolvedValueOnce({
         transCode: 'NEW',
         transNo: '20260126123456000009',
         orderId: 12345678,
@@ -259,7 +259,7 @@ describe('OrderService Integration Tests', () => {
         amount: 5000,
       });
 
-      executeRequestSpy.mockResolvedValueOnce({
+      mockExecuteRequest.mockResolvedValueOnce({
         transCode: 'NEW',
         transNo: '20260126123456000010',
         orderId: 12345679,
@@ -280,7 +280,7 @@ describe('OrderService Integration Tests', () => {
     });
 
     it('should include member ID in transaction number', async () => {
-      jest.spyOn(orderService as any, 'executeRequest').mockResolvedValue({
+      mockExecuteRequest.mockResolvedValue({
         transCode: 'NEW',
         transNo: '20260126123456000011TESTMEMBER000001',
         orderId: 12345678,
