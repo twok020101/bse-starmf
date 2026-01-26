@@ -42,7 +42,7 @@ jobs:
         id: version
         run: |
           cd packages/core
-          pnpm version prerelease --preid=beta
+          pnpm version prerelease --preid=beta --git-tag-version=false
           VERSION=$(node -e "console.log(require('./package.json').version)")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "$VERSION" > /tmp/version.txt
