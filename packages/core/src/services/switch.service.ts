@@ -6,14 +6,60 @@ import type { SwitchRequest, SwitchResponse } from '../types/api.types';
 import { validateSwitchParams } from '../utils/validators';
 import { TransactionNoGenerator } from '../utils/transaction-no';
 
+/**
+ * Service for handling Switch orders.
+ *
+ * Switch allows transferring units from one scheme to another within the
+ * same or different AMCs (Asset Management Companies).
+ *
+ * @example
+ * ```typescript
+ * // Switch from one scheme to another
+ * const switchOrder = await client.switch.switchOrder({
+ *   clientCode: 'UCC001',
+ *   schemeCode: '119603',  // Source scheme
+ *   switchSchemeCode: '119891',  // Target scheme
+ *   amount: 10000,
+ * });
+ * ```
+ */
 export class SwitchService extends BaseService {
   private transNoGenerator: TransactionNoGenerator;
 
+  /**
+   * Creates a new SwitchService instance.
+   *
+   * @param config - BSE configuration
+   * @param sessionManager - Session manager for authentication
+   * @param encryptor - Password encryptor
+   */
   constructor(config: BSEConfig, sessionManager: SessionManager, encryptor: PasswordEncryptor) {
     super(config, sessionManager, encryptor, '/MFOrderEntry/MFOrder.svc/Secure');
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }
 
+  /**
+   * Places a switch order to transfer units between schemes.
+   *
+   * @param params - Switch order parameters
+   * @param params.clientCode - Unique Client Code (UCC)
+   * @param params.schemeCode - Source scheme BSE Code
+   * @param params.switchSchemeCode - Target scheme BSE Code
+   * @param params.amount - Switch amount in INR (optional if quantity specified)
+   * @param params.quantity - Number of units to switch (optional if amount specified)
+   * @param params.allRedeem - 'Y' to switch all units
+   * @param params.folioNumber - Existing folio number
+   * @param params.remarks - Optional remarks
+   * @param params.subBrokerCode - Sub-broker code (ARN)
+   * @param params.euin - EUIN for advisory
+   * @param params.euinDeclaration - 'Y' if EUIN declared
+   *
+   * @returns {Promise<SwitchResponse>} Switch response with order IDs
+   *
+   * @throws {BSEError} TXN_002 - Invalid scheme code
+   * @throws {BSEError} TXN_003 - Switch rejected
+   * @throws {BSEError} TXN_004 - Insufficient units
+   */
   async switchOrder(params: SwitchRequest): Promise<SwitchResponse> {
     validateSwitchParams(params);
 

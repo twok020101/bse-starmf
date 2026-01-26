@@ -1,18 +1,14 @@
-import { OrderService } from '../../src/services/order.service';
+import { jest } from '@jest/globals';
 import { SessionManager } from '../../src/auth/session-manager';
 import { PasswordEncryptor } from '../../src/encryption/password-encryptor';
+import { OrderService } from '../../src/services/order.service';
 import { PurchaseResponse } from '../../src/types/api.types';
-import {
-  PURCHASE_SUCCESS_RESPONSE,
-  REDEMPTION_SUCCESS_RESPONSE,
-  ORDER_REJECTED_RESPONSE,
-  INVALID_SCHEME_RESPONSE,
-  EMPTY_RESPONSE,
-} from '../mocks/responses';
-import { createMockSessionManager, createMockEncryptor, TEST_CONFIG } from '../mocks/mock-helpers';
-import { jest } from '@jest/globals';
+import { createMockEncryptor, createMockSessionManager, TEST_CONFIG } from '../mocks/mock-helpers';
 
-type OrderServiceExecuteRequest = (methodName: string, params: Record<string, unknown>) => Promise<PurchaseResponse>;
+type OrderServiceExecuteRequest = (
+  methodName: string,
+  params: Record<string, unknown>
+) => Promise<PurchaseResponse>;
 
 describe('OrderService Integration Tests', () => {
   let orderService: OrderService;
@@ -26,7 +22,8 @@ describe('OrderService Integration Tests', () => {
     mockEncryptor = createMockEncryptor() as jest.Mocked<PasswordEncryptor>;
     orderService = new OrderService(TEST_CONFIG, mockSessionManager, mockEncryptor);
     mockExecuteRequest = jest.fn<Promise<PurchaseResponse>, [string, Record<string, unknown>]>();
-    (orderService as unknown as { executeRequest: typeof mockExecuteRequest }).executeRequest = mockExecuteRequest;
+    (orderService as unknown as { executeRequest: typeof mockExecuteRequest }).executeRequest =
+      mockExecuteRequest;
   });
 
   afterEach(() => {

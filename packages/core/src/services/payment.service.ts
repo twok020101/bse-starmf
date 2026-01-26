@@ -10,10 +10,39 @@ import type {
 import { API_ENDPOINTS } from '../config/environments';
 import { BSEError } from '../errors/bse-error';
 
+/**
+ * Service for handling payment gateway operations.
+ *
+ * Provides methods to generate payment URLs, check payment status,
+ * and initiate single payments through BSE's payment gateway.
+ *
+ * @example
+ * ```typescript
+ * // Generate payment URL for an order
+ * const payment = await client.payment.generatePaymentUrl({
+ *   orderId: 'ORD123',
+ *   amount: 5000,
+ *   clientCode: 'UCC001',
+ *   returnUrl: 'https://yourapp.com/payment/return',
+ * });
+ *
+ * // Redirect user to payment.paymentUrl
+ *
+ * // Check payment status
+ * const status = await client.payment.getPaymentStatus({
+ *   transactionId: payment.transactionId,
+ * });
+ * ```
+ */
 export class PaymentService {
   private config: BSEConfig;
   private _httpClient: AxiosInstance;
 
+  /**
+   * Creates a new PaymentService instance.
+   *
+   * @param config - BSE configuration
+   */
   constructor(config: BSEConfig) {
     this.config = config;
     const baseUrl = API_ENDPOINTS[this.config.environment].payment;
@@ -26,6 +55,21 @@ export class PaymentService {
     });
   }
 
+  /**
+   * Generates a payment URL for the given order.
+   *
+   * @param params - Payment gateway request parameters
+   * @param params.orderId - The order ID to pay for
+   * @param params.amount - Payment amount in INR
+   * @param params.clientCode - The client code
+   * @param params.returnUrl - URL to redirect after payment
+   * @param params.paymentMode - Payment mode (NETBANKING, UPI, etc.)
+   * @param params.bankCode - Bank code for net banking
+   *
+   * @returns {Promise<PaymentGatewayResponse>} Payment URL and transaction ID
+   *
+   * @throws {BSEError} PAYMENT_ERROR - Payment URL generation failed
+   */
   async generatePaymentUrl(params: PaymentGatewayRequest): Promise<PaymentGatewayResponse> {
     const transactionId = this.generateTransactionId();
 
@@ -47,6 +91,16 @@ export class PaymentService {
     }
   }
 
+  /**
+   * Checks the status of a payment transaction.
+   *
+   * @param params - Payment status request parameters
+   * @param params.transactionId - The transaction ID from payment URL generation
+   *
+   * @returns {Promise<PaymentStatusResponse>} Current payment status
+   *
+   * @throws {BSEError} PAYMENT_ERROR - Status check failed
+   */
   async getPaymentStatus(params: PaymentStatusRequest): Promise<PaymentStatusResponse> {
     try {
       const response = await this._httpClient.get(`/PaymentStatus/${params.transactionId}`);
@@ -56,6 +110,21 @@ export class PaymentService {
     }
   }
 
+  /**
+   * Initiates a single payment through BSE's unified payment API.
+   *
+   * @param params - Single payment request parameters
+   * @param params.orderId - The order ID to pay for
+   * @param params.amount - Payment amount in INR
+   * @param params.clientCode - The client code
+   * @param params.returnUrl - URL to redirect after payment
+   * @param params.paymentMode - Payment mode (NETBANKING, UPI, etc.)
+   * @param params.bankCode - Bank code for net banking
+   *
+   * @returns {Promise<PaymentGatewayResponse>} Payment URL and transaction ID
+   *
+   * @throws {BSEError} PAYMENT_ERROR - Payment initiation failed
+   */
   async initiateSinglePayment(params: PaymentGatewayRequest): Promise<PaymentGatewayResponse> {
     const transactionId = this.generateTransactionId();
 

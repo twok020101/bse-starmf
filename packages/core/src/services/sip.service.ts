@@ -6,14 +6,67 @@ import type { SIPRequest, SIPResponse } from '../types/api.types';
 import { validateSIPParams } from '../utils/validators';
 import { TransactionNoGenerator } from '../utils/transaction-no';
 
+/**
+ * Service for handling SIP (Systematic Investment Plan) operations.
+ *
+ * Provides methods for registering new SIPs and canceling existing ones.
+ *
+ * @example
+ * ```typescript
+ * // Register SIP
+ * const sip = await client.sip.register({
+ *   clientCode: 'UCC001',
+ *   schemeCode: '119603',
+ *   amount: 1000,
+ *   frequency: 'MONTHLY',
+ *   startDate: '15/01/2026',
+ *   noOfInstallments: 24,
+ * });
+ *
+ * // Cancel SIP
+ * await client.sip.cancel(sip.sipRegId);
+ * ```
+ */
 export class SIPService extends BaseService {
   private transNoGenerator: TransactionNoGenerator;
 
+  /**
+   * Creates a new SIPService instance.
+   *
+   * @param config - BSE configuration
+   * @param sessionManager - Session manager for authentication
+   * @param encryptor - Password encryptor
+   */
   constructor(config: BSEConfig, sessionManager: SessionManager, encryptor: PasswordEncryptor) {
     super(config, sessionManager, encryptor, '/MFOrderEntry/MFOrder.svc/Secure');
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }
 
+  /**
+   * Registers a new SIP for a mutual fund scheme.
+   *
+   * @param params - SIP registration parameters
+   * @param params.clientCode - Unique Client Code (UCC)
+   * @param params.schemeCode - BSE Scheme Code
+   * @param params.amount - SIP installment amount in INR
+   * @param params.frequency - SIP frequency: 'MONTHLY', 'QUARTERLY', or 'WEEKLY'
+   * @param params.startDate - First installment date in DD/MM/YYYY format
+   * @param params.noOfInstallments - Number of installments (use 999 for perpetual)
+   * @param params.folioNumber - Existing folio number (optional)
+   * @param params.firstOrderToday - 'Y' to execute first order immediately
+   * @param params.subBrokerCode - Sub-broker code (ARN)
+   * @param params.euin - EUIN for advisory
+   * @param params.euinDeclaration - 'Y' if EUIN declared
+   * @param params.dpTransaction - Demat transaction type
+   * @param params.mandateId - Mandate ID for auto-debit
+   * @param params.endDate - End date in DD/MM/YYYY (required for daily SIP)
+   * @param params.remarks - Optional remarks
+   *
+   * @returns {Promise<SIPResponse>} SIP registration response with SIP ID
+   *
+   * @throws {BSEError} TXN_002 - Invalid scheme code
+   * @throws {BSEError} AUTH_001 - Invalid client code
+   */
   async register(params: SIPRequest): Promise<SIPResponse> {
     validateSIPParams({
       startDate: params.startDate,
@@ -52,6 +105,15 @@ export class SIPService extends BaseService {
     });
   }
 
+  /**
+   * Cancels an existing SIP registration.
+   *
+   * @param sipRegId - The SIP registration ID to cancel
+   *
+   * @returns {Promise<SIPResponse>} Cancellation response
+   *
+   * @throws {BSEError} TXN_003 - Cancellation failed (SIP may not exist)
+   */
   async cancel(sipRegId: number): Promise<SIPResponse> {
     const transNo = this.transNoGenerator.generate();
 

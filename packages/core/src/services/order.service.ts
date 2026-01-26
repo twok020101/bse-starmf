@@ -13,14 +13,75 @@ import type {
 import { BSEError } from '../errors/bse-error';
 import { validatePurchaseParams } from '../utils/validators';
 
+/**
+ * Service for handling order operations (purchase and redemption).
+ *
+ * Provides methods for placing buy and sell orders for mutual fund schemes.
+ *
+ * @example
+ * ```typescript
+ * // Purchase
+ * const purchase = await client.orders.purchase({
+ *   clientCode: 'UCC001',
+ *   schemeCode: '119603',
+ *   amount: 5000,
+ * });
+ *
+ * // Redemption
+ * const redemption = await client.orders.redeem({
+ *   clientCode: 'UCC001',
+ *   schemeCode: '119603',
+ *   amount: 1000,
+ * });
+ * ```
+ */
 export class OrderService extends BaseService {
   private transNoGenerator: TransactionNoGenerator;
 
+  /**
+   * Creates a new OrderService instance.
+   *
+   * @param config - BSE configuration
+   * @param sessionManager - Session manager for authentication
+   * @param encryptor - Password encryptor
+   */
   constructor(config: BSEConfig, sessionManager: SessionManager, encryptor: PasswordEncryptor) {
     super(config, sessionManager, encryptor, '/MFOrderEntry/MFOrder.svc/Secure');
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }
 
+  /**
+   * Places a purchase order for a mutual fund scheme.
+   *
+   * @param params - Purchase request parameters
+   * @param params.clientCode - Unique Client Code (UCC)
+   * @param params.schemeCode - BSE Scheme Code
+   * @param params.amount - Purchase amount in INR (required if quantity not specified)
+   * @param params.quantity - Number of units to purchase (required if amount not specified)
+   * @param params.buySellType - Order type: 'FRESH' or 'ADDITIONAL'
+   * @param params.dpTransaction - Demat transaction type: 'P' (Physical), 'C' (Cascade), 'N' (NCD)
+   * @param params.folioNumber - Existing folio number (optional)
+   * @param params.allRedeem - 'Y' for complete redemption (use with quantity=0)
+   * @param params.kycStatus - 'Y' if KYC completed
+   * @param params.remarks - Optional remarks
+   * @param params.internalRefNo - Your internal reference number
+   * @param params.subBrokerCode - Sub-broker code (ARN)
+   * @param params.euin - EUIN for advisory
+   * @param params.euinDeclaration - 'Y' if EUIN declared
+   * @param params.dpcFlag - 'Y' to disable panic cut-off
+   * @param params.subBrokerArn - Sub-broker ARN code
+   * @param params.pgRefNo - Payment gateway reference
+   * @param params.bankAccountNo - Bank account number for payment
+   * @param params.mobileNo - Mobile number
+   * @param params.emailId - Email address
+   * @param params.mandateId - Mandate ID for SIP payments
+   *
+   * @returns {Promise<PurchaseResponse>} Purchase response with order details
+   *
+   * @throws {BSEError} TXN_002 - Invalid scheme code
+   * @throws {BSEError} TXN_003 - Order rejected
+   * @throws {BSEError} AUTH_001 - Invalid client code
+   */
   async purchase(params: PurchaseRequest): Promise<PurchaseResponse> {
     validatePurchaseParams({
       amount: params.amount,
@@ -63,6 +124,36 @@ export class OrderService extends BaseService {
     return response;
   }
 
+  /**
+   * Places a redemption order for a mutual fund scheme.
+   *
+   * @param params - Redemption request parameters
+   * @param params.clientCode - Unique Client Code (UCC)
+   * @param params.schemeCode - BSE Scheme Code
+   * @param params.amount - Redemption amount in INR (optional if quantity specified)
+   * @param params.quantity - Number of units to redeem (optional if amount specified)
+   * @param params.allRedeem - 'Y' to redeem all units (use with amount=0, quantity=0)
+   * @param params.buySellType - Order type: 'FRESH' or 'ADDITIONAL'
+   * @param params.dpTransaction - Demat transaction type: 'P' (Physical), 'C' (Cascade), 'N' (NCD)
+   * @param params.folioNumber - Existing folio number
+   * @param params.kycStatus - 'Y' if KYC completed
+   * @param params.remarks - Optional remarks
+   * @param params.internalRefNo - Your internal reference number
+   * @param params.subBrokerCode - Sub-broker code (ARN)
+   * @param params.euin - EUIN for advisory
+   * @param params.euinDeclaration - 'Y' if EUIN declared
+   * @param params.dpcFlag - 'Y' to disable panic cut-off
+   * @param params.bankAccountNo - Bank account number for payment
+   * @param params.mobileNo - Mobile number
+   * @param params.emailId - Email address
+   *
+   * @returns {Promise<RedeemResponse>} Redemption response with order details
+   *
+   * @throws {BSEError} TXN_002 - Invalid scheme code
+   * @throws {BSEError} TXN_003 - Order rejected
+   * @throws {BSEError} TXN_004 - Insufficient units
+   * @throws {BSEError} AUTH_001 - Invalid client code
+   */
   async redeem(params: RedeemRequest): Promise<RedeemResponse> {
     validatePurchaseParams({
       amount: params.amount,

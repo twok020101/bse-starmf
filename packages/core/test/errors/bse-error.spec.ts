@@ -1,6 +1,5 @@
-import { BSEError, mapAxiosError } from '../../src/errors/bse-error';
-import { BSEErrorCode } from '../../src/errors/error-codes';
 import { AxiosError } from 'axios';
+import { BSEError, mapAxiosError } from '../../src/errors/bse-error';
 
 describe('BSEError', () => {
   describe('constructor', () => {

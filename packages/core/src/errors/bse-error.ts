@@ -2,12 +2,67 @@ import type { AxiosError } from 'axios';
 import { BSEErrorCode } from './error-codes';
 import { ERROR_MESSAGES, MESSAGE_TO_CODE_MAP, RETRYABLE_ERRORS } from './error-messages';
 
+/**
+ * Custom error class for BSE StAR MF API errors.
+ *
+ * Provides typed error codes, retry guidance, and optional raw response data
+ * for debugging failed API requests.
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await client.orders.purchase({ ... });
+ * } catch (error) {
+ *   if (error instanceof BSEError) {
+ *     console.error(`Error ${error.code}: ${error.message}`);
+ *     if (error.retryable) {
+ *       // Retry the request
+ *     }
+ *   }
+ * }
+ * ```
+ */
 export class BSEError extends Error {
+  /**
+   * Typed error code from BSEErrorCode enum.
+   *
+   * Examples: AUTH_001, TXN_003, NET_001
+   */
   public readonly code: BSEErrorCode;
+
+  /**
+   * Whether the error is retryable.
+   *
+   * Network errors and server errors (5xx) are typically retryable.
+   * Authentication and validation errors are not retryable.
+   */
   public readonly retryable: boolean;
+
+  /**
+   * Raw response data from BSE API (if available).
+   *
+   * Useful for debugging when BSE returns unexpected responses.
+   */
   public readonly rawResponse?: string;
+
+  /**
+   * Additional error details object.
+   *
+   * May contain field-specific validation errors, request parameters,
+   * or other contextual information.
+   */
   public readonly details?: Record<string, unknown>;
 
+  /**
+   * Creates a new BSEError instance.
+   *
+   * @param code - Error code from BSEErrorCode enum or custom string code
+   * @param message - Optional custom error message (overrides default)
+   * @param options - Additional error options
+   * @param options.retryable - Whether the error can be retried
+   * @param options.rawResponse - Raw API response for debugging
+   * @param options.details - Additional error details
+   */
   constructor(
     code: BSEErrorCode | string,
     message?: string,
@@ -49,6 +104,15 @@ export class BSEError extends Error {
   }
 }
 
+/**
+ * Maps an Axios error to a BSEError.
+ *
+ * Extracts error message from SOAP response and maps it to appropriate
+ * error code. Network errors are marked as retryable.
+ *
+ * @param error - The Axios error to map
+ * @returns A new BSEError with appropriate code and message
+ */
 export function mapAxiosError(error: AxiosError): BSEError {
   if (!error.response) {
     return new BSEError('NET_001', error.message, { retryable: true });

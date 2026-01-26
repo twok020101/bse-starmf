@@ -6,14 +6,67 @@ import type { XSIPRequest, XSIPResponse } from '../types/api.types';
 import { validateSIPParams } from '../utils/validators';
 import { TransactionNoGenerator } from '../utils/transaction-no';
 
+/**
+ * Service for handling XSIP (Extended SIP) operations.
+ *
+ * XSIP allows registration of SIPs with mandate integration for automatic
+ * debit instructions. Similar to regular SIP but requires a registered mandate.
+ *
+ * @example
+ * ```typescript
+ * // Register XSIP with mandate
+ * const xsip = await client.xsip.register({
+ *   clientCode: 'UCC001',
+ *   schemeCode: '119603',
+ *   amount: 2000,
+ *   frequency: 'MONTHLY',
+ *   startDate: '01/02/2026',
+ *   noOfInstallments: 12,
+ *   xsipMandateId: 'MDT001',
+ * });
+ *
+ * // Cancel XSIP
+ * await client.xsip.cancel(xsip.sipRegId);
+ * ```
+ */
 export class XSIPService extends BaseService {
   private transNoGenerator: TransactionNoGenerator;
 
+  /**
+   * Creates a new XSIPService instance.
+   *
+   * @param config - BSE configuration
+   * @param sessionManager - Session manager for authentication
+   * @param encryptor - Password encryptor
+   */
   constructor(config: BSEConfig, sessionManager: SessionManager, encryptor: PasswordEncryptor) {
     super(config, sessionManager, encryptor, '/MFOrderEntry/MFOrder.svc/Secure');
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }
 
+  /**
+   * Registers a new XSIP with mandate integration.
+   *
+   * @param params - XSIP registration parameters
+   * @param params.clientCode - Unique Client Code (UCC)
+   * @param params.schemeCode - BSE Scheme Code
+   * @param params.amount - SIP installment amount in INR
+   * @param params.frequency - SIP frequency: 'MONTHLY', 'QUARTERLY', or 'WEEKLY'
+   * @param params.startDate - First installment date in DD/MM/YYYY format
+   * @param params.noOfInstallments - Number of installments (use 999 for perpetual)
+   * @param params.xsipMandateId - Registered Mandate ID for auto-debit
+   * @param params.folioNumber - Existing folio number (optional)
+   * @param params.subBrokerCode - Sub-broker code (ARN)
+   * @param params.euin - EUIN for advisory
+   * @param params.euinDeclaration - 'Y' if EUIN declared
+   * @param params.remarks - Optional remarks
+   * @param params.endDate - End date in DD/MM/YYYY format
+   *
+   * @returns {Promise<XSIPResponse>} XSIP registration response with registration ID
+   *
+   * @throws {BSEError} TXN_002 - Invalid scheme code
+   * @throws {BSEError} AUTH_001 - Invalid client code
+   */
   async register(params: XSIPRequest): Promise<XSIPResponse> {
     validateSIPParams({
       startDate: params.startDate,
@@ -51,6 +104,15 @@ export class XSIPService extends BaseService {
     });
   }
 
+  /**
+   * Cancels an existing XSIP registration.
+   *
+   * @param xsipRegId - The XSIP registration ID to cancel
+   *
+   * @returns {Promise<XSIPResponse>} Cancellation response
+   *
+   * @throws {BSEError} TXN_003 - Cancellation failed
+   */
   async cancel(xsipRegId: number): Promise<XSIPResponse> {
     const transNo = this.transNoGenerator.generate();
 

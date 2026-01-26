@@ -1,21 +1,57 @@
 import { z } from 'zod';
 
+/**
+ * Zod schema for transaction numbers.
+ *
+ * Format: YYYYMMDD{MemberId}{6-digit-counter}
+ * Example: 20260126MEMBER000001
+ */
 export const TransactionNoSchema = z
   .string()
   .regex(/^\d{8}[A-Z0-9]+\d{6}$/, 'Invalid transaction number format');
 
+/**
+ * Zod schema for monetary amounts.
+ *
+ * Must be positive with up to 3 decimal places.
+ */
 export const AmountSchema = z.number().positive().multipleOf(0.001);
 
+/**
+ * Zod schema for Indian PAN numbers.
+ *
+ * Format: 5 uppercase letters + 4 digits + 1 uppercase letter
+ * Example: ABCDE1234F
+ */
 export const PANSchema = z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format');
 
+/**
+ * Zod schema for Indian mobile numbers.
+ *
+ * Must start with 6-9 and be 10 digits total.
+ */
 export const MobileNoSchema = z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile number');
 
+/**
+ * Zod schema for email addresses.
+ */
 export const EmailSchema = z.string().email();
 
+/**
+ * Zod schema for dates in DD/MM/YYYY format.
+ */
 export const DateSchema = z
   .string()
   .regex(/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/, 'Date must be in DD/MM/YYYY format');
 
+/**
+ * Validates purchase/redeem request parameters.
+ *
+ * Ensures exactly one of: amount, quantity, or allRedeem=Y is specified.
+ *
+ * @param params - Parameters to validate
+ * @throws Error if validation fails
+ */
 export function validatePurchaseParams(params: {
   amount?: number;
   quantity?: number;
@@ -34,6 +70,12 @@ export function validatePurchaseParams(params: {
   }
 }
 
+/**
+ * Validates SIP registration parameters.
+ *
+ * @param params - Parameters to validate
+ * @throws Error if validation fails
+ */
 export function validateSIPParams(params: {
   startDate?: string;
   endDate?: string;
@@ -54,6 +96,12 @@ export function validateSIPParams(params: {
   }
 }
 
+/**
+ * Validates client registration parameters.
+ *
+ * @param params - Parameters to validate
+ * @throws Error if validation fails
+ */
 export function validateClientParams(params: {
   firstName?: string;
   pan?: string;
@@ -110,6 +158,12 @@ export function validateClientParams(params: {
   }
 }
 
+/**
+ * Validates switch order parameters.
+ *
+ * @param params - Parameters to validate
+ * @throws Error if validation fails
+ */
 export function validateSwitchParams(params: {
   amount?: number;
   quantity?: number;
@@ -133,6 +187,12 @@ export function validateSwitchParams(params: {
   }
 }
 
+/**
+ * Validates spread order parameters.
+ *
+ * @param params - Parameters to validate
+ * @throws Error if validation fails
+ */
 export function validateSpreadParams(params: { amount?: number; redeemDate?: string }): void {
   if (!params.amount || params.amount <= 0) {
     throw new Error('Valid amount is required for spread order');

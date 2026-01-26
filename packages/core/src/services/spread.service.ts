@@ -6,14 +6,57 @@ import type { SpreadRequest, SpreadResponse } from '../types/api.types';
 import { validateSpreadParams } from '../utils/validators';
 import { TransactionNoGenerator } from '../utils/transaction-no';
 
+/**
+ * Service for handling Spread orders.
+ *
+ * Spread orders allow simultaneous purchase and redemption on the same day,
+ * typically used for capital gains distribution strategies.
+ *
+ * @example
+ * ```typescript
+ * // Create a spread order (buy + redeem on same day)
+ * const spread = await client.spread.createSpread({
+ *   clientCode: 'UCC001',
+ *   schemeCode: '119603',
+ *   amount: 50000,
+ *   redeemDate: '25/01/2026',
+ * });
+ * ```
+ */
 export class SpreadService extends BaseService {
   private transNoGenerator: TransactionNoGenerator;
 
+  /**
+   * Creates a new SpreadService instance.
+   *
+   * @param config - BSE configuration
+   * @param sessionManager - Session manager for authentication
+   * @param encryptor - Password encryptor
+   */
   constructor(config: BSEConfig, sessionManager: SessionManager, encryptor: PasswordEncryptor) {
     super(config, sessionManager, encryptor, '/MFOrderEntry/MFOrder.svc/Secure');
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }
 
+  /**
+   * Creates a spread order (simultaneous buy and redeem).
+   *
+   * @param params - Spread order parameters
+   * @param params.clientCode - Unique Client Code (UCC)
+   * @param params.schemeCode - BSE Scheme Code
+   * @param params.amount - Purchase amount in INR
+   * @param params.redeemDate - Date for redemption in DD/MM/YYYY format
+   * @param params.folioNumber - Existing folio number (optional)
+   * @param params.remarks - Optional remarks
+   * @param params.subBrokerCode - Sub-broker code (ARN)
+   * @param params.euin - EUIN for advisory
+   * @param params.euinDeclaration - 'Y' if EUIN declared
+   *
+   * @returns {Promise<SpreadResponse>} Spread order response
+   *
+   * @throws {BSEError} TXN_002 - Invalid scheme code
+   * @throws {BSEError} TXN_003 - Order rejected
+   */
   async createSpread(params: SpreadRequest): Promise<SpreadResponse> {
     validateSpreadParams(params);
 

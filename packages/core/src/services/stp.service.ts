@@ -10,11 +10,40 @@ import { API_ENDPOINTS } from '../config/environments';
 import { BSEError } from '../errors/bse-error';
 import { TransactionNoGenerator } from '../utils/transaction-no';
 
+/**
+ * Service for handling STP (Systematic Transfer Plan) operations.
+ *
+ * STP allows automatic transfer of units from one scheme to another at
+ * regular intervals, combining the benefits of systematic withdrawal
+ * and systematic investment.
+ *
+ * @example
+ * ```typescript
+ * // Register STP
+ * const stp = await client.stp.register({
+ *   clientCode: 'UCC001',
+ *   fromSchemeCode: '119603',  // Source scheme
+ *   toSchemeCode: '119891',    // Target scheme
+ *   amount: 5000,
+ *   frequency: 'MONTHLY',
+ *   startDate: '01/02/2026',
+ *   noOfInstallments: 12,
+ * });
+ *
+ * // Cancel STP
+ * await client.stp.cancel({ stpRegId: stp.stpRegId });
+ * ```
+ */
 export class STPService {
   private config: BSEConfig;
   private _httpClient: AxiosInstance;
   private transNoGenerator: TransactionNoGenerator;
 
+  /**
+   * Creates a new STPService instance.
+   *
+   * @param config - BSE configuration
+   */
   constructor(config: BSEConfig) {
     this.config = config;
     const baseUrl = API_ENDPOINTS[this.config.environment].stp;
@@ -28,6 +57,30 @@ export class STPService {
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }
 
+  /**
+   * Registers a new STP (Systematic Transfer Plan).
+   *
+   * @param params - STP registration parameters
+   * @param params.clientCode - Unique Client Code (UCC)
+   * @param params.fromSchemeCode - Source scheme BSE Code (withdrawal)
+   * @param params.toSchemeCode - Target scheme BSE Code (investment)
+   * @param params.amount - Transfer amount in INR
+   * @param params.percent - Transfer as percentage of units (use either amount or percent)
+   * @param params.frequency - 'DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY'
+   * @param params.startDate - First transfer date in DD/MM/YYYY format
+   * @param params.endDate - Last transfer date in DD/MM/YYYY format
+   * @param params.noOfInstallments - Number of transfers (use 999 for perpetual)
+   * @param params.stpType - 'CAPITALAPPRECIATION' or 'TRANSFER'
+   * @param params.folioNumber - Existing folio number
+   * @param params.subBrokerCode - Sub-broker code (ARN)
+   * @param params.euin - EUIN for advisory
+   * @param params.euinDeclaration - 'Y' if EUIN declared
+   * @param params.remarks - Optional remarks
+   *
+   * @returns {Promise<STPResponse>} STP registration response
+   *
+   * @throws {BSEError} STP_ERROR - STP registration failed
+   */
   async register(params: STPRegistrationRequest): Promise<STPResponse> {
     const transNo = this.transNoGenerator.generate();
 
@@ -61,6 +114,17 @@ export class STPService {
     }
   }
 
+  /**
+   * Cancels an existing STP registration.
+   *
+   * @param params - STP cancellation parameters
+   * @param params.stpRegId - The STP registration ID to cancel
+   * @param params.remarks - Optional cancellation remarks
+   *
+   * @returns {Promise<STPResponse>} Cancellation response
+   *
+   * @throws {BSEError} STP_ERROR - Cancellation failed
+   */
   async cancel(params: STPCancellationRequest): Promise<STPResponse> {
     const transNo = this.transNoGenerator.generate();
 

@@ -6,10 +6,26 @@ import { SOAPBuilder } from '../utils/soap-builder';
 import { BSEError } from '../errors/bse-error';
 import { SESSION_EXPIRY } from '../config/environments';
 
+/**
+ * Manages BSE StAR MF authentication sessions.
+ *
+ * Handles session lifecycle including:
+ * - Creating new sessions with encrypted credentials
+ * - Caching active sessions
+ * - Automatic session refresh before expiry
+ * - Concurrent refresh prevention
+ *
+ * Sessions are valid for 1 hour (as per BSE specification).
+ */
 export class SessionManager {
   private config: BSEConfig;
   private state: SessionState;
 
+  /**
+   * Creates a new SessionManager instance.
+   *
+   * @param config - BSE configuration containing user credentials
+   */
   constructor(config: BSEConfig) {
     this.config = config;
     this.state = {
@@ -18,6 +34,19 @@ export class SessionManager {
     };
   }
 
+  /**
+   * Creates a new session with BSE StAR MF API.
+   *
+   * Encrypts the password and sends authentication request.
+   * The returned session is cached for subsequent requests.
+   *
+   * @param userId - BSE user ID
+   * @param encryptedPassword - AES-256 encrypted password
+   * @returns {Promise<Session>} New session with authentication token
+   *
+   * @throws {BSEError} AUTH_FAILED - If credentials are invalid
+   * @throws {BSEError} EMPTY_RESPONSE - If API returns empty response
+   */
   async createSession(userId: string, encryptedPassword: string): Promise<Session> {
     const soapEnvelope = SOAPBuilder.build('bses', 'http://bsestarmf.in/', 'getPassword', {
       UserId: userId,
@@ -52,6 +81,17 @@ export class SessionManager {
     return session;
   }
 
+  /**
+   * Gets the current active session.
+   *
+   * If no session exists, throws an error.
+   * If the session is expired, automatically refreshes it.
+   * Handles concurrent refresh requests to prevent duplicate calls.
+   *
+   * @returns {Promise<Session>} Current active session
+   *
+   * @throws {BSEError} NO_SESSION - If no session exists and none can be created
+   */
   async getSession(): Promise<Session> {
     if (!this.state.currentSession) {
       throw new BSEError('NO_SESSION', 'No active session. Please authenticate first.');
@@ -72,6 +112,17 @@ export class SessionManager {
     return this.state.currentSession;
   }
 
+  /**
+   * Refreshes the current session with new credentials.
+   *
+   * Uses the existing encrypted password from the current session
+   * to authenticate and get a fresh session token.
+   *
+   * @returns {Promise<Session>} Refreshed session
+   *
+   * @throws {BSEError} NO_SESSION - If no session exists to refresh
+   * @throws {BSEError} AUTH_FAILED - If refresh authentication fails
+   */
   async refreshSession(): Promise<Session> {
     if (!this.state.currentSession) {
       throw new BSEError('NO_SESSION', 'No session to refresh');
@@ -83,6 +134,13 @@ export class SessionManager {
     );
   }
 
+  /**
+   * Clears the current session.
+   *
+   * Removes the cached session and any pending refresh promise.
+   * After clearing, subsequent API calls will fail until a new
+   * session is created via {@link createSession}.
+   */
   clearSession(): void {
     this.state.currentSession = null;
     this.state.pendingRefresh = null;

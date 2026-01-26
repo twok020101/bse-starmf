@@ -1,3 +1,23 @@
+/**
+ * Utility class for building SOAP envelopes for BSE StAR MF API requests.
+ *
+ * Handles the construction of properly formatted SOAP XML messages
+ * with namespace prefixes, headers, and body elements.
+ *
+ * @example
+ * ```typescript
+ * const envelope = SOAPBuilder.build(
+ *   'bses',
+ *   'http://bsestarmf.in/',
+ *   'orderEntryParam',
+ *   {
+ *     TransCode: 'NEW',
+ *     TransNo: '20260126MEMBER000001',
+ *     ClientCode: 'UCC001',
+ *   }
+ * );
+ * ```
+ */
 export class SOAPBuilder {
   private static readonly SOAP_ENVELOPE = `<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
@@ -11,6 +31,16 @@ export class SOAPBuilder {
   </soap:Body>
 </soap:Envelope>`;
 
+  /**
+   * Builds a complete SOAP envelope with header and body.
+   *
+   * @param prefix - XML namespace prefix (e.g., 'bses')
+   * @param namespace - XML namespace URI (e.g., 'http://bsestarmf.in/')
+   * @param methodName - The SOAP method to call
+   * @param params - Method parameters as key-value pairs
+   * @param endpoint - Optional endpoint URL for header
+   * @returns Complete SOAP XML envelope as string
+   */
   static build(
     prefix: string,
     namespace: string,
@@ -28,6 +58,15 @@ export class SOAPBuilder {
       .replace('{body}', body);
   }
 
+  /**
+   * Builds the method element body without the envelope wrapper.
+   *
+   * @param prefix - XML namespace prefix
+   * @param namespace - XML namespace URI
+   * @param methodName - The SOAP method name
+   * @param params - Method parameters
+   * @returns SOAP body element as XML string
+   */
   static buildMethodElement(
     prefix: string,
     namespace: string,

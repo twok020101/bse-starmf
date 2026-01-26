@@ -1,5 +1,5 @@
-import axios, { AxiosResponse, AxiosStatic, AxiosInstance } from 'axios';
 import { jest } from '@jest/globals';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
 export interface MockConfig {
   responseData: string;
