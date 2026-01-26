@@ -1,0 +1,61 @@
+name: Promote to Stable
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Get latest beta version
+        id: version
+        run: |
+          git fetch --tags
+          TAGS=$(git tag -l "v*-beta.*" --sort=-version:refname)
+          LATEST_BETA=$(echo "$TAGS" | head -1)
+          echo "beta_tag=$LATEST_BETA" >> $GITHUB_OUTPUT
+          BETA_VERSION=${LATEST_BETA#v}
+          STABLE_VERSION=$(echo "$BETA_VERSION" | sed 's/-beta\.[0-9]*//')
+          echo "beta_version=$BETA_VERSION" >> $GITHUB_OUTPUT
+          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update version to stable
+        run: |
+          pnpm --filter @bse-starmf/core version "${{ steps.version.outputs.stable_version }}" --git-tag-version=false
+
+      - name: Commit stable version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/core/package.json
+          git commit -m "chore: promote ${{ steps.version.outputs.beta_version }} → ${{ steps.version.outputs.stable_version }} [stable]"
+          git push origin main
+
+      - name: Create Pull Request
+        run: |
+          gh pr create \
+            --title "Release: ${{ steps.version.outputs.stable_version }}" \
+            --body "Promote beta ${{ steps.version.outputs.beta_version }} to stable ${{ steps.version.outputs.stable_version }}" \
+            --base main \
+            --head main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
