@@ -31,25 +31,35 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Get current version
+        id: current_version
+        run: |
+          VERSION=$(jq -r '.version' packages/core/package.json)
+          echo "current_version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Bump beta version
         id: version
         run: |
-          pnpm --filter @bse-starmf/core version patch --git-tag-version=false
-          VERSION=$(pnpm --filter @bse-starmf/core json version -q)
+          cd packages/core
+          pnpm version patch
+          VERSION=$(pnpm json version -q)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" > /tmp/version.txt
+          cd ../..
 
       - name: Commit and tag
         run: |
+          VERSION=$(cat /tmp/version.txt)
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/core/package.json
-          git commit -m "chore(release): ${{ steps.version.outputs.version }} [skip ci]"
-          git tag "v${{ steps.version.outputs.version }}"
+          git commit -m "chore(release): $VERSION [skip ci]"
+          git tag "v$VERSION"
 
       - name: Push
         run: |
           git push
-          git push origin "v${{ steps.version.outputs.version }}"
+          git push origin "v$(cat /tmp/version.txt)"
 
       - name: Build
         run: pnpm build
