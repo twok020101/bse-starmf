@@ -1,17 +1,19 @@
 name: Release (Beta)
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  release:
+  beta:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,8 +22,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -31,35 +31,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Get commit message
-        id: commit
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
-
-      - name: Bump version
+      - name: Bump beta version
         id: version
         run: |
-          if echo "${{ steps.commit.outputs.message }}" | grep -q "\[stable\]"; then
-            echo "release_type=stable" >> $GITHUB_OUTPUT
-            # For stable, the version is already bumped in the PR
-            VERSION=$(pnpm --filter @bse-starmf/core json version -q)
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-          else
-            echo "release_type=beta" >> $GITHUB_OUTPUT
-            pnpm --filter @bse-starmf/core version patch --git-tag-version=false
-            VERSION=$(pnpm --filter @bse-starmf/core json version -q)
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
-          fi
+          pnpm --filter @bse-starmf/core version patch --git-tag-version=false
+          VERSION=$(pnpm --filter @bse-starmf/core json version -q)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit and tag
-        if: steps.version.outputs.release_type == 'beta'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/core/package.json
           git commit -m "chore(release): ${{ steps.version.outputs.version }} [skip ci]"
           git tag "v${{ steps.version.outputs.version }}"
+
+      - name: Push
+        run: |
           git push
           git push origin "v${{ steps.version.outputs.version }}"
 
@@ -69,10 +57,5 @@ jobs:
       - name: Test
         run: pnpm test
 
-      - name: Publish to npm
-        run: |
-          if [[ "${{ steps.version.outputs.release_type }}" == "stable" ]]; then
-            pnpm -r publish --access public --provenance --no-git-checks
-          else
-            pnpm -r publish --access public --tag beta --provenance --no-git-checks
-          fi
+      - name: Publish to npm (Beta)
+        run: pnpm -r publish --access public --tag beta --provenance --no-git-checks
