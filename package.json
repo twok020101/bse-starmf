@@ -1,0 +1,20 @@
+{
+  "name": "bse-starmf",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TypeScript SDK for BSE StAR MF Mutual Fund API",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "clean": "pnpm -r run clean"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
