@@ -42,10 +42,26 @@ jobs:
         id: version
         run: |
           cd packages/core
-          pnpm version prerelease --preid=beta --git-tag-version=false
-          VERSION=$(node -e "console.log(require('./package.json').version)")
+          ls
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const current = pkg.version;
+            let newVersion;
+            if (current.includes('-beta.')) {
+              const [base, beta] = current.split('-beta.');
+              newVersion = base + '-beta.' + (parseInt(beta) + 1);
+            } else {
+              const parts = current.split('.');
+              parts[2] = parseInt(parts[2]) + 1;
+              newVersion = parts.join('.') + '-beta.0';
+            }
+            pkg.version = newVersion;
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            console.log(newVersion);
+          " > /tmp/version.txt
+          VERSION=$(cat /tmp/version.txt)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "$VERSION" > /tmp/version.txt
           cd ../..
 
       - name: Commit and tag
