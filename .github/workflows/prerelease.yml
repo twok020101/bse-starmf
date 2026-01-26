@@ -1,14 +1,13 @@
-name: Release
+name: Prerelease
 
 on:
   push:
     tags:
-      - 'v[0-9]*.[0-9]*.[0-9]*'
-      - 'v*[0-9]-release'
-      - 'v*[0-9].release'
+      - 'v*[0-9]-beta.[0-9]*'
+      - 'v*[0-9].beta.[0-9]*'
 
 jobs:
-  release:
+  prerelease:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +34,7 @@ jobs:
         run: pnpm test
 
       - name: Publish to npm
-        run: pnpm -r publish --access public
+        run: pnpm -r publish --access public --tag beta
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -45,6 +44,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          release_name: Prerelease ${{ github.ref_name }}
           draft: false
-          prerelease: false
+          prerelease: true
