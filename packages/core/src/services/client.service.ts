@@ -1,6 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
 import { BSEConfig } from '../client/client.types';
-import { ClientRegistrationRequest, ClientRegistrationResponse, ClientModificationRequest } from '../types/api.types';
+import {
+  ClientRegistrationRequest,
+  ClientRegistrationResponse,
+  ClientModificationRequest,
+} from '../types/api.types';
 import { validateClientParams } from '../utils/validators';
 import { BSEError } from '../errors/bse-error';
 

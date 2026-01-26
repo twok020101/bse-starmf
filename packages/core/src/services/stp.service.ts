@@ -86,7 +86,10 @@ export class STPService {
     return {
       transCode: (responseData.transCode as string) || '',
       transNo: (responseData.transNo as string) || '',
-      stpRegId: parseInt((responseData.stpRegId as string) || (responseData.regId as string) || '0', 10),
+      stpRegId: parseInt(
+        (responseData.stpRegId as string) || (responseData.regId as string) || '0',
+        10
+      ),
       status: (responseData.status as string) || '',
       bseRemarks: (responseData.bseRemarks as string) || (responseData.remarks as string) || '',
     };
@@ -97,11 +100,10 @@ export class STPService {
       const status = error.response?.status || 500;
       const message = error.response?.data?.message || error.message || 'STP request failed';
 
-      return new BSEError(
-        status >= 500 ? 'SERVER_ERROR' : 'STP_ERROR',
-        message,
-        { retryable: status >= 500, details: { statusCode: status } }
-      );
+      return new BSEError(status >= 500 ? 'SERVER_ERROR' : 'STP_ERROR', message, {
+        retryable: status >= 500,
+        details: { statusCode: status },
+      });
     }
 
     return new BSEError('STP_ERROR', 'Unknown STP error');

@@ -74,10 +74,7 @@ export class BSEClient {
       throw new BSEError('AUTH_001', 'User ID and password are required');
     }
 
-    const encryptedPassword = this.encryptor.encrypt(
-      this.config.password,
-      this.config.passkey!
-    );
+    const encryptedPassword = this.encryptor.encrypt(this.config.password, this.config.passkey!);
 
     await this.sessionManager.createSession(this.config.userId, encryptedPassword);
     this._authenticated = true;

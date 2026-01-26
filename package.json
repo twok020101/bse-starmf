@@ -11,7 +11,9 @@
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
-    "clean": "pnpm -r run clean"
+    "clean": "pnpm -r run clean",
+    "publish:core": "pnpm --filter @bse-starmf/core npm publish --access public",
+    "release": "pnpm build && pnpm test && pnpm publish:core"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {

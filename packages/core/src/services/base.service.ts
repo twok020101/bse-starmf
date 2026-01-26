@@ -55,7 +55,7 @@ export abstract class BaseService {
 
     const response = await this.httpClient.post('', soapEnvelope, {
       headers: {
-        'SOAPAction': soapAction,
+        SOAPAction: soapAction,
       },
     });
 
@@ -74,7 +74,7 @@ export abstract class BaseService {
 
   private setupInterceptors(): void {
     this.httpClient.interceptors.request.use(
-      async (config) => {
+      async config => {
         try {
           const session = await this.sessionManager.getSession();
           if (isSessionExpired.call(session)) {
@@ -85,11 +85,11 @@ export abstract class BaseService {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error)
     );
 
     this.httpClient.interceptors.response.use(
-      (response) => response,
+      response => response,
       async (error: AxiosError) => {
         const bseError = await mapAxiosError(error);
         throw bseError;

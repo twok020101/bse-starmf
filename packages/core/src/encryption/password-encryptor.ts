@@ -38,7 +38,8 @@ export class PasswordEncryptor {
 
   private getPadding(): object {
     const CryptoJS = require('crypto-js');
-    const padName = this.options.padding.charAt(0).toUpperCase() + this.options.padding.slice(1).toLowerCase();
+    const padName =
+      this.options.padding.charAt(0).toUpperCase() + this.options.padding.slice(1).toLowerCase();
     const pad = (CryptoJS.pad as Record<string, object>)[padName];
     return pad || CryptoJS.pad.Pkcs7;
   }

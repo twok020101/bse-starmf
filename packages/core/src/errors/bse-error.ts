@@ -57,14 +57,10 @@ export async function mapAxiosError(error: AxiosError): Promise<BSEError> {
   const responseData = error.response.data as string;
   const errorMessage = extractErrorMessage(responseData);
 
-  return new BSEError(
-    mapErrorMessageToCode(errorMessage),
-    errorMessage,
-    {
-      retryable: error.response.status >= 500,
-      rawResponse: responseData,
-    }
-  );
+  return new BSEError(mapErrorMessageToCode(errorMessage), errorMessage, {
+    retryable: error.response.status >= 500,
+    rawResponse: responseData,
+  });
 }
 
 function extractErrorMessage(soapResponse: string): string {
@@ -95,5 +91,5 @@ function extractErrorMessage(soapResponse: string): string {
 }
 
 function mapErrorMessageToCode(message: string): BSEErrorCode {
-  return MESSAGE_TO_CODE_MAP[message] || 'UNKNOWN' as BSEErrorCode;
+  return MESSAGE_TO_CODE_MAP[message] || ('UNKNOWN' as BSEErrorCode);
 }

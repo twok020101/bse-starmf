@@ -18,27 +18,18 @@ export class SessionManager {
   }
 
   async createSession(userId: string, encryptedPassword: string): Promise<Session> {
-    const soapEnvelope = SOAPBuilder.build(
-      'bses',
-      'http://bsestarmf.in/',
-      'getPassword',
-      {
-        UserId: userId,
-        Password: encryptedPassword,
-        PassKey: this.config.passkey,
-      }
-    );
+    const soapEnvelope = SOAPBuilder.build('bses', 'http://bsestarmf.in/', 'getPassword', {
+      UserId: userId,
+      Password: encryptedPassword,
+      PassKey: this.config.passkey,
+    });
 
     const baseUrl = this.config.baseUrl || this.getBaseUrl();
 
-    const response = await axios.post(
-      `${baseUrl}/MFOrderEntry/MFOrder.svc/Secure`,
-      soapEnvelope,
-      {
-        headers: { 'Content-Type': 'text/xml; charset=utf-8' },
-        timeout: this.config.timeout,
-      }
-    );
+    const response = await axios.post(`${baseUrl}/MFOrderEntry/MFOrder.svc/Secure`, soapEnvelope, {
+      headers: { 'Content-Type': 'text/xml; charset=utf-8' },
+      timeout: this.config.timeout,
+    });
 
     const result = this.parseAuthResponse(response.data);
 
@@ -111,7 +102,9 @@ export class SessionManager {
       const parser = new (require('fast-xml-parser').XMLParser)();
       const doc = parser.parse(soapResponse);
       const resultText =
-        doc?.['soap:Envelope']?.['soap:Body']?.['getPasswordResponse']?.['getPasswordResult']?.['#text'] ||
+        doc?.['soap:Envelope']?.['soap:Body']?.['getPasswordResponse']?.['getPasswordResult']?.[
+          '#text'
+        ] ||
         doc?.['soap:Envelope']?.['soap:Body']?.['getPasswordResponse']?.['getPasswordResult'] ||
         '';
 

@@ -21,8 +21,7 @@ export class SOAPBuilder {
     const soapAction = `${namespace}${methodName}`;
     const body = this.buildMethodElement(prefix, namespace, methodName, params);
 
-    return this.SOAP_ENVELOPE
-      .replace('{namespacePrefix}', prefix)
+    return this.SOAP_ENVELOPE.replace('{namespacePrefix}', prefix)
       .replace('{namespace}', namespace)
       .replace('{soapAction}', soapAction)
       .replace('{endpoint}', endpoint || '')

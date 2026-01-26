@@ -4,18 +4,19 @@ import { SessionManager } from '../auth/session-manager';
 import { PasswordEncryptor } from '../encryption/password-encryptor';
 import { SOAPBuilder } from '../utils/soap-builder';
 import { TransactionNoGenerator } from '../utils/transaction-no';
-import { PurchaseRequest, PurchaseResponse, RedeemRequest, RedeemResponse } from '../types/api.types';
+import {
+  PurchaseRequest,
+  PurchaseResponse,
+  RedeemRequest,
+  RedeemResponse,
+} from '../types/api.types';
 import { BSEError } from '../errors/bse-error';
 import { validatePurchaseParams } from '../utils/validators';
 
 export class OrderService extends BaseService {
   private transNoGenerator: TransactionNoGenerator;
 
-  constructor(
-    config: BSEConfig,
-    sessionManager: SessionManager,
-    encryptor: PasswordEncryptor
-  ) {
+  constructor(config: BSEConfig, sessionManager: SessionManager, encryptor: PasswordEncryptor) {
     super(config, sessionManager, encryptor, '/MFOrderEntry/MFOrder.svc/Secure');
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }
@@ -29,38 +30,35 @@ export class OrderService extends BaseService {
 
     const transNo = this.transNoGenerator.generate();
 
-    const response = await this.executeRequest<PurchaseResponse>(
-      'orderEntryParam',
-      {
-        TransCode: 'NEW',
-        TransNo: transNo,
-        OrderId: '',
-        ClientCode: params.clientCode,
-        SchemeCd: params.schemeCode,
-        BuySell: 'P',
-        BuySellType: params.buySellType || 'FRESH',
-        DPTxn: params.dpTransaction || 'P',
-        OrderVal: params.amount || '',
-        Qty: params.quantity || '',
-        AllRedeem: params.allRedeem || 'N',
-        FolioNo: params.folioNumber || '',
-        Remarks: params.remarks || '',
-        KYCStatus: params.kycStatus || 'Y',
-        RefNo: params.internalRefNo || '',
-        SubBrCode: params.subBrokerCode || '',
-        EUIN: params.euin || '',
-        EUINVal: params.euinDeclaration || 'N',
-        MinRedeem: params.minRedeemFlag || 'N',
-        DPC: params.dpcFlag || 'Y',
-        IPAdd: '',
-        Parma1: params.subBrokerArn || '',
-        Param2: params.pgRefNo || '',
-        Param3: params.bankAccountNo || '',
-        MobileNo: params.mobileNo || '',
-        EmailID: params.emailId || '',
-        MandateID: params.mandateId || '',
-      }
-    );
+    const response = await this.executeRequest<PurchaseResponse>('orderEntryParam', {
+      TransCode: 'NEW',
+      TransNo: transNo,
+      OrderId: '',
+      ClientCode: params.clientCode,
+      SchemeCd: params.schemeCode,
+      BuySell: 'P',
+      BuySellType: params.buySellType || 'FRESH',
+      DPTxn: params.dpTransaction || 'P',
+      OrderVal: params.amount || '',
+      Qty: params.quantity || '',
+      AllRedeem: params.allRedeem || 'N',
+      FolioNo: params.folioNumber || '',
+      Remarks: params.remarks || '',
+      KYCStatus: params.kycStatus || 'Y',
+      RefNo: params.internalRefNo || '',
+      SubBrCode: params.subBrokerCode || '',
+      EUIN: params.euin || '',
+      EUINVal: params.euinDeclaration || 'N',
+      MinRedeem: params.minRedeemFlag || 'N',
+      DPC: params.dpcFlag || 'Y',
+      IPAdd: '',
+      Parma1: params.subBrokerArn || '',
+      Param2: params.pgRefNo || '',
+      Param3: params.bankAccountNo || '',
+      MobileNo: params.mobileNo || '',
+      EmailID: params.emailId || '',
+      MandateID: params.mandateId || '',
+    });
 
     return response;
   }

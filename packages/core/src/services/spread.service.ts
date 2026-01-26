@@ -9,11 +9,7 @@ import { TransactionNoGenerator } from '../utils/transaction-no';
 export class SpreadService extends BaseService {
   private transNoGenerator: TransactionNoGenerator;
 
-  constructor(
-    config: BSEConfig,
-    sessionManager: SessionManager,
-    encryptor: PasswordEncryptor
-  ) {
+  constructor(config: BSEConfig, sessionManager: SessionManager, encryptor: PasswordEncryptor) {
     super(config, sessionManager, encryptor, '/MFOrderEntry/MFOrder.svc/Secure');
     this.transNoGenerator = new TransactionNoGenerator(config.memberId);
   }

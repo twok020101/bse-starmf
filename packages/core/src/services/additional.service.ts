@@ -1,6 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
 import { BSEConfig } from '../client/client.types';
-import { API_ENDPOINTS } from '../config/environments';
 import { BSEError } from '../errors/bse-error';
 import { TransactionNoGenerator } from '../utils/transaction-no';
 
@@ -235,7 +234,10 @@ export class AdditionalService {
 
     return {
       status: (responseData.status as string) || '',
-      newSipRegId: parseInt((responseData.newSIPRegId as string) || (responseData.sipRegId as string) || '0', 10),
+      newSipRegId: parseInt(
+        (responseData.newSIPRegId as string) || (responseData.sipRegId as string) || '0',
+        10
+      ),
       bseRemarks: (responseData.bseRemarks as string) || (responseData.remarks as string) || '',
     };
   }
@@ -243,13 +245,13 @@ export class AdditionalService {
   private mapAdditionalError(error: unknown): BSEError {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status || 500;
-      const message = error.response?.data?.message || error.message || 'Additional service request failed';
+      const message =
+        error.response?.data?.message || error.message || 'Additional service request failed';
 
-      return new BSEError(
-        status >= 500 ? 'SERVER_ERROR' : 'ADDITIONAL_ERROR',
-        message,
-        { retryable: status >= 500, details: { statusCode: status } }
-      );
+      return new BSEError(status >= 500 ? 'SERVER_ERROR' : 'ADDITIONAL_ERROR', message, {
+        retryable: status >= 500,
+        details: { statusCode: status },
+      });
     }
 
     return new BSEError('ADDITIONAL_ERROR', 'Unknown additional service error');

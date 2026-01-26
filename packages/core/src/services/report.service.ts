@@ -38,7 +38,9 @@ export class ReportService {
     }
   }
 
-  async getAllotmentStatement(params: AllotmentStatementRequest): Promise<AllotmentStatementResponse> {
+  async getAllotmentStatement(
+    params: AllotmentStatementRequest
+  ): Promise<AllotmentStatementResponse> {
     try {
       const response = await this.httpClient.get(`/order/${params.orderId}/allotment`, {
         params: { clientCode: params.clientCode },
@@ -52,7 +54,9 @@ export class ReportService {
     }
   }
 
-  async getRedemptionStatement(params: RedemptionStatementRequest): Promise<RedemptionStatementResponse> {
+  async getRedemptionStatement(
+    params: RedemptionStatementRequest
+  ): Promise<RedemptionStatementResponse> {
     try {
       const response = await this.httpClient.get(`/order/${params.orderId}/redemption`, {
         params: { clientCode: params.clientCode },

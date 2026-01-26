@@ -1,28 +1,20 @@
 import { z } from 'zod';
 
-export const TransactionNoSchema = z.string().regex(
-  /^\d{8}[A-Z0-9]+\d{6}$/,
-  'Invalid transaction number format'
-);
+export const TransactionNoSchema = z
+  .string()
+  .regex(/^\d{8}[A-Z0-9]+\d{6}$/, 'Invalid transaction number format');
 
 export const AmountSchema = z.number().positive().multipleOf(0.001);
 
-export const PANSchema = z.string().regex(
-  /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-  'Invalid PAN format'
-);
+export const PANSchema = z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format');
 
-export const MobileNoSchema = z.string().regex(
-  /^[6-9]\d{9}$/,
-  'Invalid Indian mobile number'
-);
+export const MobileNoSchema = z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian mobile number');
 
 export const EmailSchema = z.string().email();
 
-export const DateSchema = z.string().regex(
-  /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
-  'Date must be in DD/MM/YYYY format'
-);
+export const DateSchema = z
+  .string()
+  .regex(/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/, 'Date must be in DD/MM/YYYY format');
 
 export function validatePurchaseParams(params: {
   amount?: number;
@@ -141,10 +133,7 @@ export function validateSwitchParams(params: {
   }
 }
 
-export function validateSpreadParams(params: {
-  amount?: number;
-  redeemDate?: string;
-}): void {
+export function validateSpreadParams(params: { amount?: number; redeemDate?: string }): void {
   if (!params.amount || params.amount <= 0) {
     throw new Error('Valid amount is required for spread order');
   }

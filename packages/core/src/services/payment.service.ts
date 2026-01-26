@@ -88,8 +88,9 @@ export class PaymentService {
     }
 
     const responseData = data as Record<string, unknown>;
-    const paymentUrl = responseData.paymentUrl as string || responseData.redirectUrl as string || '';
-    const bseTransactionId = responseData.transactionId as string || transactionId;
+    const paymentUrl =
+      (responseData.paymentUrl as string) || (responseData.redirectUrl as string) || '';
+    const bseTransactionId = (responseData.transactionId as string) || transactionId;
 
     if (!paymentUrl) {
       throw new BSEError('PAYMENT_ERROR', 'No payment URL returned');
@@ -122,7 +123,11 @@ export class PaymentService {
     if (normalizedStatus === 'SUCCESS' || normalizedStatus === 'S') {
       return 'Success';
     }
-    if (normalizedStatus === 'FAILED' || normalizedStatus === 'F' || normalizedStatus === 'FAILURE') {
+    if (
+      normalizedStatus === 'FAILED' ||
+      normalizedStatus === 'F' ||
+      normalizedStatus === 'FAILURE'
+    ) {
       return 'Failed';
     }
     return 'Pending';
@@ -133,11 +138,10 @@ export class PaymentService {
       const status = error.response?.status || 500;
       const message = error.response?.data?.message || error.message || 'Payment request failed';
 
-      return new BSEError(
-        status >= 500 ? 'SERVER_ERROR' : 'PAYMENT_ERROR',
-        message,
-        { retryable: status >= 500, details: { statusCode: status } }
-      );
+      return new BSEError(status >= 500 ? 'SERVER_ERROR' : 'PAYMENT_ERROR', message, {
+        retryable: status >= 500,
+        details: { statusCode: status },
+      });
     }
 
     return new BSEError('PAYMENT_ERROR', 'Unknown payment error');

@@ -53,14 +53,21 @@
     "api",
     "sdk"
   ],
-  "author": "",
+  "author": "twok020101",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/anomalyco/bse-starmf/issues"
+  "engines": {
+    "node": ">=18.0.0"
   },
-  "homepage": "https://github.com/anomalyco/bse-starmf#readme",
+  "bugs": {
+    "url": "https://github.com/twok020101/bse-starmf/issues"
+  },
+  "homepage": "https://github.com/twok020101/bse-starmf#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/anomalyco/bse-starmf.git"
+    "url": "https://github.com/twok020101/bse-starmf.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
