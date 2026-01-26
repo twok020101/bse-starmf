@@ -34,7 +34,7 @@ jobs:
         run: pnpm test
 
       - name: Publish to npm
-        run: pnpm -r publish --access public --tag beta
+        run: pnpm -r publish --access public --tag beta --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
