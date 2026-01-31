@@ -81,6 +81,9 @@ jobs:
           git push
           git push origin "v$(cat /tmp/version.txt)"
 
+      - name: Copy README to core package
+        run: cp README.md packages/core/README.md
+
       - name: Build
         run: pnpm build
 
